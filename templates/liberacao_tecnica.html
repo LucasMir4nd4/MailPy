@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liberação Técnica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: rgb(51, 51, 51);
+            color: #ffffff;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        button:hover { background-color: #45a049; }
+
+        /* Switch tipo (Liberação / Cadastro) */
+        .switch-tipo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .switch-tipo span {
+            color: #555;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .toggle {
+            position: relative;
+            width: 52px;
+            height: 26px;
+        }
+        .toggle input { display: none; }
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background-color: #4CAF50;
+            border-radius: 26px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        .toggle input:checked + .toggle-slider { background-color: #2196F3; }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(26px); }
+
+        /* Checkbox visualizar */
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            padding: 0;
+            accent-color: #4CAF50;
+            width: 16px;
+            height: 16px;
+        }
+        .checkbox-row label {
+            margin: 0;
+            color: #555;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Liberação Técnica</h1>
+        <form action="/enviar" method="post">
+
+            <!-- Switch Liberação / Cadastro -->
+            <div class="switch-tipo">
+                <span id="label-tipo-esq" style="color: #4CAF50;">Liberação</span>
+                <label class="toggle">
+                    <input type="checkbox" id="tipo-switch" name="tipo" value="cadastro">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span id="label-tipo-dir" style="color: #aaa;">Cadastro</span>
+            </div>
+
+            <label for="base">Base:</label>
+            <input 
+                list="bases-list" 
+                id="base" 
+                name="base" 
+                placeholder="Digite para buscar uma localidade..."
+                autocomplete="off"
+            >
+            <datalist id="bases-list">
+                {% for base in bases %}
+                    <option value="{{ base }}">
+                {% endfor %}
+            </datalist>
+                        
+            <label for="numero-chamado">Número do Chamado:</label>
+            <input type="text" id="numero-chamado" name="numero-chamado" placeholder="Digite o número do chamado">
+            
+            <label for="dados-tecnico">Dados do Técnico:</label>
+            <textarea id="dados-tecnico" name="dados-tecnico" rows="4" placeholder="Digite os dados do técnico"></textarea>
+
+            <label for="data_atendimento">Data do Atendimento:</label>
+            <input type="date" id="data_atendimento" name="data_atendimento" required>
+
+            <!-- Checkbox apenas visualizar -->
+            <div class="checkbox-row">
+                <input type="checkbox" id="apenas-visualizar" name="apenas_visualizar" value="1">
+                <label for="apenas-visualizar">Apenas visualizar email</label>
+            </div>
+            
+            <button type="submit" id="btn-enviar">Enviar</button>
+        </form>
+    </div>
+
+    <script>
+;
+        // Data padrão = hoje
+        document.getElementById('data_atendimento').value = new Date().toISOString().slice(0, 10);
+
+        // Switch tipo: destaca o lado ativo
+        let tipoSwitch = document.getElementById('tipo-switch');
+        const labelEsq = document.getElementById('label-tipo-esq');
+        const labelDir = document.getElementById('label-tipo-dir');
+
+        tipoSwitch.addEventListener('change', () => {
+            if (tipoSwitch.checked) {
+                tipoSwitch.setAttribute('value', 'cadastro');
+                labelEsq.style.color = '#aaa';
+                labelDir.style.color = '#2196F3';
+            } else {
+                tipoSwitch.setAttribute('value', 'liberacao');
+                labelEsq.style.color = '#4CAF50';
+                labelDir.style.color = '#aaa';
+            }
+        });
+
+        // Checkbox visualizar: muda texto do botão
+        const checkVisualizar = document.getElementById('apenas-visualizar');
+        const btnEnviar = document.getElementById('btn-enviar');
+
+        checkVisualizar.addEventListener('change', () => {
+            btnEnviar.textContent = checkVisualizar.checked ? 'Visualizar' : 'Enviar';
+            btnEnviar.style.backgroundColor = checkVisualizar.checked ? '#888' : '#4CAF50';
+        });
+    </script>
+</body>
+</html>
