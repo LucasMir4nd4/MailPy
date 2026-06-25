@@ -2,8 +2,19 @@ import csv
 import win32com.client as win32
 from flask import Flask, redirect, render_template, request, url_for
 import pythoncom
+from halo_events import halo_events_bp, adicionar_evento
 
 app = Flask(__name__)
+
+app.register_blueprint(halo_events_bp)
+
+COMENTARIO_HALO = (
+    "Olá, seu chamado foi recebido pelo time Arklok.\n"
+    "Enviaremos um técnico até a localidade para verificar o ocorrido com o equipamento.\n\n"
+    "Em breve você terá um posicionamento sobre este acionamento.\n\n"
+    "Atenciosamente,\n"
+    "Suporte Técnico Arklok | Equipamentos de Informática"
+)
 
 teste = False
 
@@ -123,7 +134,6 @@ def liberar():
             <p>Atendimento ser realizado no dia {data_atendimento}. Horário comercial</p>
             
             <p>{obs}<br></p>
-            
 
             
             </body>
@@ -153,6 +163,7 @@ def liberar():
             email.Send()
     finally:
         pythoncom.CoUninitialize()  # Desinicializa o COM para a thread atual
+        adicionar_evento(numero_chamado, COMENTARIO_HALO)
 
     # print(f"Base: {base}")
     # print(f"Chamado: {numero_chamado}")
